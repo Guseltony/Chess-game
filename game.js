@@ -4,7 +4,7 @@ const infoDisplay = document.querySelector("#info-display");
 
 const width = 8;
 let playerGo = "black";
-playerDisplay.textContent = "black";
+playerDisplay.textContent = playerGo;
 
 const startPieces = [
   rook,
@@ -129,7 +129,6 @@ function dragStart(e) {
   // console.log(e.target.parentNode.getAttribute("square-id"));
   startPositionId = e.target.parentNode.getAttribute("square-id");
   draggedElement = e.target;
-  console.log(draggedElement);
 }
 
 function dragOver(e) {
@@ -138,11 +137,71 @@ function dragOver(e) {
 
 function dragDrop(e) {
   e.stopPropagation();
-
-  console.log(e.target);
-
+  const correctGo = draggedElement.classList.contains(playerGo);
   const taken = e.target.classList.contains("piece");
+  const valid = checkIfValid(e.target);
+  const opponentGo = playerGo === "white" ? "black" : "white";
+  const takenByOpponent = e.target.classList.contains(opponentGo);
 
-  // e.target.parentNode.append(draggedElement);
-  // e.target.remove();
+  if (correctGo) {
+    // must check this first
+    if (takenByOpponent && valid) {
+      e.target.parentNode.append(draggedElement);
+      e.target.remove();
+      changePlayer();
+      return;
+    }
+    // then chek this
+
+    if (taken && !takenByOpponent) {
+      infoDisplay.textContent = "You cannot go here";
+      setTimeout(() => (infoDisplay.textContent = ""), 2000);
+      return;
+    }
+    if (valid) {
+      e.target.append(draggedElement);
+      changePlayer();
+      return;
+    }
+  }
+}
+
+function checkIfValid(target) {
+  const targetId =
+    Number(target.getAttribute("square-id")) ||
+    Number(target.parentNode.getAttribute("square-id"));
+  const startId = Number(startPositionId);
+  const piece = draggedElement.id;
+  console.log("targetId", targetId);
+  console.log("startId", startId);
+  console.log("piece", piece);
+
+  switch (piece) {
+    case "pawn":
+      const startRow = [8, 9, 10, 11, 12, 13, 14, 15];
+  }
+}
+
+function changePlayer() {
+  if (playerGo === "black") {
+    reverseIds();
+    playerGo = "white";
+    playerDisplay.textContent = playerGo;
+  } else {
+    revertIds();
+    playerGo = "black";
+    playerDisplay.textContent = playerGo;
+  }
+}
+
+function reverseIds() {
+  const allSquares = document.querySelectorAll(".square");
+  allSquares.forEach((square, i) =>
+    square.setAttribute("square-id", width * width - 1 - i)
+  );
+}
+
+function revertIds() {
+  const allSquares = document.querySelectorAll(".square");
+  allSquares.forEach((square, i) => square.setAttribute("square-id", i));
 }
